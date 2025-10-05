@@ -1,6 +1,7 @@
 """
 Users API endpoints.
 """
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from apps.users.models import User
@@ -10,10 +11,10 @@ router = APIRouter()
 
 
 class UserProfileUpdate(BaseModel):
-    first_name: str = None
-    last_name: str = None
-    phone: str = None
-    email: EmailStr = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
 class UserProfileResponse(BaseModel):
@@ -22,7 +23,7 @@ class UserProfileResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
-    phone: str = None
+    phone: Optional[str] = None
     is_admin: bool
     created_at: str
     

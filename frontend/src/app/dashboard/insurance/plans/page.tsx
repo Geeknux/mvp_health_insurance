@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -30,12 +30,7 @@ export default function InsurancePlansPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    fetchPlans();
-    checkAdminStatus();
-  }, []);
-
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
@@ -53,9 +48,9 @@ export default function InsurancePlansPage() {
     } catch (error) {
       console.error('Error checking admin status:', error);
     }
-  };
+  }, []);
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/insurance/plans`);
       if (response.ok) {
@@ -67,7 +62,12 @@ export default function InsurancePlansPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchPlans();
+    checkAdminStatus();
+  }, [fetchPlans, checkAdminStatus]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fa-IR').format(amount) + ' ریال';

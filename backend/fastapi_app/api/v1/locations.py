@@ -1,7 +1,7 @@
 """
 Locations API endpoints.
 """
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Query, HTTPException, status
 from pydantic import BaseModel, UUID4
 from apps.locations.models import State, City, County, Region, District, School
@@ -64,8 +64,8 @@ class SchoolResponse(BaseModel):
     name_fa: str
     code: str
     school_type: str
-    address: str = None
-    phone: str = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
     
     class Config:
         from_attributes = True

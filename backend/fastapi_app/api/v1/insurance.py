@@ -1,7 +1,7 @@
 """
 Insurance API endpoints.
 """
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, UUID4
 from apps.insurance.models import InsurancePlan, PlanCoverage, InsuranceRegistration
@@ -19,7 +19,7 @@ class CoverageResponse(BaseModel):
     description_fa: str
     coverage_amount: float
     coverage_percentage: int
-    max_usage_count: int = None
+    max_usage_count: Optional[int] = None
     
     class Config:
         from_attributes = True
@@ -50,8 +50,8 @@ class RegistrationResponse(BaseModel):
     school_id: str
     status: str
     registration_date: str
-    start_date: str = None
-    end_date: str = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
     
     class Config:
         from_attributes = True

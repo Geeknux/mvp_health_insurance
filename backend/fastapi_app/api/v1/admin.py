@@ -4,7 +4,7 @@ Admin API endpoints for managing insurance plans, coverages, and locations.
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, UUID4, Field
-from apps.insurance.models import InsurancePlan, PlanCoverage
+from apps.insurance.models import InsurancePlan, PlanCoverage, InsuranceRegistration
 from apps.locations.models import State, City, County, Region, District, School
 from apps.users.models import User
 from core.dependencies import get_current_admin_user
@@ -457,3 +457,95 @@ def delete_school(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="مدرسه یافت نشد"
         )
+
+
+# Admin Statistics
+class AdminStatsResponse(BaseModel):
+    total_users: int
+    total_plans: int
+    active_plans: int
+    total_coverages: int
+    total_registrations: int
+    pending_registrations: int
+    approved_registrations: int
+    active_registrations: int
+    rejected_registrations: int
+    total_schools: int
+    total_states: int
+    total_cities: int
+    registrations_by_plan: List[dict]
+    registrations_by_status: List[dict]
+    recent_registrations: List[dict]
+
+
+@router.get("/stats", response_model=AdminStatsResponse)
+def get_admin_statistics(current_user: User = Depends(get_current_admin_user)):
+    """Get admin dashboard statistics (Admin only)."""
+    
+    # Basic counts
+    total_users = User.objects.count()
+    total_plans = InsurancePlan.objects.count()
+    active_plans = InsurancePlan.objects.filter(is_active=True).count()
+    total_coverages = PlanCoverage.objects.count()
+    total_registrations = InsuranceRegistration.objects.count()
+    
+    # Registration status counts
+    pending_registrations = InsuranceRegistration.objects.filter(status='pending').count()
+    approved_registrations = InsuranceRegistration.objects.filter(status='approved').count()
+    active_registrations = InsuranceRegistration.objects.filter(status='active').count()
+    rejected_registrations = InsuranceRegistration.objects.filter(status='rejected').count()
+    
+    # Location counts
+    total_schools = School.objects.count()
+    total_states = State.objects.count()
+    total_cities = City.objects.count()
+    
+    # Registrations by plan
+    registrations_by_plan = []
+    for plan in InsurancePlan.objects.all():
+        count = InsuranceRegistration.objects.filter(plan=plan).count()
+        registrations_by_plan.append({
+            'plan_name': plan.name_fa,
+            'plan_type': plan.plan_type,
+            'count': count
+        })
+    
+    # Registrations by status
+    registrations_by_status = [
+        {'status': 'pending', 'label': 'در انتظار تایید', 'count': pending_registrations},
+        {'status': 'approved', 'label': 'تایید شده', 'count': approved_registrations},
+        {'status': 'active', 'label': 'فعال', 'count': active_registrations},
+        {'status': 'rejected', 'label': 'رد شده', 'count': rejected_registrations},
+    ]
+    
+    # Recent registrations
+    recent_regs = InsuranceRegistration.objects.select_related('user', 'plan', 'school').order_by('-registration_date')[:5]
+    recent_registrations = [
+        {
+            'id': str(reg.id),
+            'user_name': f"{reg.user.first_name} {reg.user.last_name}",
+            'plan_name': reg.plan.name_fa,
+            'school_name': reg.school.name_fa,
+            'status': reg.status,
+            'registration_date': reg.registration_date.isoformat()
+        }
+        for reg in recent_regs
+    ]
+    
+    return AdminStatsResponse(
+        total_users=total_users,
+        total_plans=total_plans,
+        active_plans=active_plans,
+        total_coverages=total_coverages,
+        total_registrations=total_registrations,
+        pending_registrations=pending_registrations,
+        approved_registrations=approved_registrations,
+        active_registrations=active_registrations,
+        rejected_registrations=rejected_registrations,
+        total_schools=total_schools,
+        total_states=total_states,
+        total_cities=total_cities,
+        registrations_by_plan=registrations_by_plan,
+        registrations_by_status=registrations_by_status,
+        recent_registrations=recent_registrations
+    )
