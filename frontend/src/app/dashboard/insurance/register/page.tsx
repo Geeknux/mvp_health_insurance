@@ -180,12 +180,16 @@ export default function InsuranceRegisterPage() {
                   }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   required
+                  disabled={cities.length === 0}
                 >
-                  <option value="">انتخاب شهر</option>
+                  <option value="">{cities.length === 0 ? 'شهری یافت نشد' : 'انتخاب شهر'}</option>
                   {cities.map((city: any) => (
                     <option key={city.id} value={city.id}>{city.name_fa}</option>
                   ))}
                 </select>
+                {cities.length === 0 && (
+                  <p className="mt-1 text-sm text-amber-600">هیچ شهری برای این استان ثبت نشده است</p>
+                )}
               </div>
             )}
 
@@ -206,12 +210,16 @@ export default function InsuranceRegisterPage() {
                   }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   required
+                  disabled={counties.length === 0}
                 >
-                  <option value="">انتخاب شهرستان</option>
+                  <option value="">{counties.length === 0 ? 'شهرستانی یافت نشد' : 'انتخاب شهرستان'}</option>
                   {counties.map((county: any) => (
                     <option key={county.id} value={county.id}>{county.name_fa}</option>
                   ))}
                 </select>
+                {counties.length === 0 && (
+                  <p className="mt-1 text-sm text-amber-600">هیچ شهرستانی برای این شهر ثبت نشده است</p>
+                )}
               </div>
             )}
 
@@ -231,12 +239,16 @@ export default function InsuranceRegisterPage() {
                   }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   required
+                  disabled={regions.length === 0}
                 >
-                  <option value="">انتخاب منطقه</option>
+                  <option value="">{regions.length === 0 ? 'منطقه‌ای یافت نشد' : 'انتخاب منطقه'}</option>
                   {regions.map((region: any) => (
                     <option key={region.id} value={region.id}>{region.name_fa}</option>
                   ))}
                 </select>
+                {regions.length === 0 && (
+                  <p className="mt-1 text-sm text-amber-600">هیچ منطقه‌ای برای این شهرستان ثبت نشده است</p>
+                )}
               </div>
             )}
 
@@ -255,12 +267,16 @@ export default function InsuranceRegisterPage() {
                   }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   required
+                  disabled={districts.length === 0}
                 >
-                  <option value="">انتخاب ناحیه</option>
+                  <option value="">{districts.length === 0 ? 'ناحیه‌ای یافت نشد' : 'انتخاب ناحیه'}</option>
                   {districts.map((district: any) => (
                     <option key={district.id} value={district.id}>{district.name_fa}</option>
                   ))}
                 </select>
+                {districts.length === 0 && (
+                  <p className="mt-1 text-sm text-amber-600">هیچ ناحیه‌ای برای این منطقه ثبت نشده است</p>
+                )}
               </div>
             )}
 
@@ -275,12 +291,16 @@ export default function InsuranceRegisterPage() {
                   onChange={(e) => setFormData({ ...formData, schoolId: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   required
+                  disabled={schools.length === 0}
                 >
-                  <option value="">انتخاب مدرسه</option>
+                  <option value="">{schools.length === 0 ? 'مدرسه‌ای یافت نشد' : 'انتخاب مدرسه'}</option>
                   {schools.map((school: any) => (
                     <option key={school.id} value={school.id}>{school.name_fa}</option>
                   ))}
                 </select>
+                {schools.length === 0 && (
+                  <p className="mt-1 text-sm text-amber-600">هیچ مدرسه‌ای برای این ناحیه ثبت نشده است</p>
+                )}
               </div>
             )}
 

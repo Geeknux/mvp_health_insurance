@@ -1,10 +1,11 @@
 """
-Admin API endpoints for managing insurance plans and coverages.
+Admin API endpoints for managing insurance plans, coverages, and locations.
 """
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, UUID4, Field
 from apps.insurance.models import InsurancePlan, PlanCoverage
+from apps.locations.models import State, City, County, Region, District, School
 from apps.users.models import User
 from core.dependencies import get_current_admin_user
 
@@ -300,4 +301,159 @@ def delete_coverage(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="پوشش بیمه یافت نشد"
+        )
+
+
+# School Management
+class CreateSchoolRequest(BaseModel):
+    district_id: UUID4
+    name_fa: str = Field(..., min_length=2, max_length=200)
+    code: str = Field(..., min_length=1, max_length=20)
+    school_type: str = Field(..., description="elementary, middle, high, or combined")
+    address: str | None = None
+    phone: str | None = Field(None, min_length=11, max_length=11)
+
+
+class UpdateSchoolRequest(BaseModel):
+    name_fa: str | None = None
+    code: str | None = None
+    school_type: str | None = None
+    address: str | None = None
+    phone: str | None = None
+
+
+class SchoolResponse(BaseModel):
+    id: str
+    district_id: str
+    name_fa: str
+    code: str
+    school_type: str
+    address: str | None
+    phone: str | None
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.post("/schools", response_model=SchoolResponse, status_code=status.HTTP_201_CREATED)
+def create_school(
+    data: CreateSchoolRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new school (Admin only)."""
+    try:
+        district = District.objects.get(id=data.district_id)
+    except District.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ناحیه یافت نشد"
+        )
+    
+    if School.objects.filter(code=data.code).exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="مدرسه با این کد قبلاً ثبت شده است"
+        )
+    
+    school = School.objects.create(
+        district=district,
+        name_fa=data.name_fa,
+        code=data.code,
+        school_type=data.school_type,
+        address=data.address,
+        phone=data.phone
+    )
+    
+    return SchoolResponse(
+        id=str(school.id),
+        district_id=str(school.district_id),
+        name_fa=school.name_fa,
+        code=school.code,
+        school_type=school.school_type,
+        address=school.address,
+        phone=school.phone,
+        created_at=school.created_at.isoformat()
+    )
+
+
+@router.get("/schools", response_model=List[SchoolResponse])
+def get_all_schools(current_user: User = Depends(get_current_admin_user)):
+    """Get all schools (Admin only)."""
+    schools = School.objects.all()
+    
+    return [
+        SchoolResponse(
+            id=str(school.id),
+            district_id=str(school.district_id),
+            name_fa=school.name_fa,
+            code=school.code,
+            school_type=school.school_type,
+            address=school.address,
+            phone=school.phone,
+            created_at=school.created_at.isoformat()
+        )
+        for school in schools
+    ]
+
+
+@router.put("/schools/{school_id}", response_model=SchoolResponse)
+def update_school(
+    school_id: UUID4,
+    data: UpdateSchoolRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a school (Admin only)."""
+    try:
+        school = School.objects.get(id=school_id)
+    except School.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="مدرسه یافت نشد"
+        )
+    
+    if data.name_fa:
+        school.name_fa = data.name_fa
+    if data.code:
+        # Check if code is unique
+        if School.objects.filter(code=data.code).exclude(id=school_id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="مدرسه با این کد قبلاً ثبت شده است"
+            )
+        school.code = data.code
+    if data.school_type:
+        school.school_type = data.school_type
+    if data.address is not None:
+        school.address = data.address
+    if data.phone is not None:
+        school.phone = data.phone
+    
+    school.save()
+    
+    return SchoolResponse(
+        id=str(school.id),
+        district_id=str(school.district_id),
+        name_fa=school.name_fa,
+        code=school.code,
+        school_type=school.school_type,
+        address=school.address,
+        phone=school.phone,
+        created_at=school.created_at.isoformat()
+    )
+
+
+@router.delete("/schools/{school_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_school(
+    school_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a school (Admin only)."""
+    try:
+        school = School.objects.get(id=school_id)
+        school.delete()
+    except School.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="مدرسه یافت نشد"
         )

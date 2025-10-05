@@ -34,6 +34,7 @@ services:
         echo 'Database is ready!' &&
         cd django_app &&
         python manage.py migrate &&
+        python seed_data.py &&
         cd ../fastapi_app &&
         uvicorn main:app --host 0.0.0.0 --port 8000 --reload
       "
