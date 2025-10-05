@@ -549,3 +549,123 @@ def get_admin_statistics(current_user: User = Depends(get_current_admin_user)):
         registrations_by_status=registrations_by_status,
         recent_registrations=recent_registrations
     )
+
+
+# Registration Management
+class RegistrationDetailResponse(BaseModel):
+    id: str
+    user_id: str
+    user_name: str
+    user_email: str
+    user_national_id: str
+    plan_id: str
+    plan_name: str
+    plan_type: str
+    monthly_premium: float
+    school_id: str
+    school_name: str
+    school_code: str
+    status: str
+    registration_date: str
+    start_date: str | None
+    end_date: str | None
+
+
+class UpdateRegistrationStatusRequest(BaseModel):
+    status: str = Field(..., description="pending, approved, active, rejected, cancelled")
+    start_date: str | None = None
+    end_date: str | None = None
+
+
+@router.get("/registrations", response_model=List[dict])
+def get_all_registrations(current_user: User = Depends(get_current_admin_user)):
+    """Get all registrations (Admin only)."""
+    registrations = InsuranceRegistration.objects.select_related('user', 'plan', 'school').order_by('-registration_date')
+    
+    return [
+        {
+            'id': str(reg.id),
+            'user_name': f"{reg.user.first_name} {reg.user.last_name}",
+            'plan_name': reg.plan.name_fa,
+            'school_name': reg.school.name_fa,
+            'status': reg.status,
+            'registration_date': reg.registration_date.isoformat()
+        }
+        for reg in registrations
+    ]
+
+
+@router.get("/registrations/{registration_id}", response_model=RegistrationDetailResponse)
+def get_registration_detail(
+    registration_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Get registration details (Admin only)."""
+    try:
+        reg = InsuranceRegistration.objects.select_related('user', 'plan', 'school').get(id=registration_id)
+    except InsuranceRegistration.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ثبت‌نام یافت نشد"
+        )
+    
+    return RegistrationDetailResponse(
+        id=str(reg.id),
+        user_id=str(reg.user.id),
+        user_name=f"{reg.user.first_name} {reg.user.last_name}",
+        user_email=reg.user.email,
+        user_national_id=reg.user.national_id,
+        plan_id=str(reg.plan.id),
+        plan_name=reg.plan.name_fa,
+        plan_type=reg.plan.plan_type,
+        monthly_premium=float(reg.plan.monthly_premium),
+        school_id=str(reg.school.id),
+        school_name=reg.school.name_fa,
+        school_code=reg.school.code,
+        status=reg.status,
+        registration_date=reg.registration_date.isoformat(),
+        start_date=reg.start_date.isoformat() if reg.start_date else None,
+        end_date=reg.end_date.isoformat() if reg.end_date else None
+    )
+
+
+@router.put("/registrations/{registration_id}/status")
+def update_registration_status(
+    registration_id: UUID4,
+    data: UpdateRegistrationStatusRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update registration status (Admin only)."""
+    try:
+        reg = InsuranceRegistration.objects.get(id=registration_id)
+    except InsuranceRegistration.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ثبت‌نام یافت نشد"
+        )
+    
+    # Validate status
+    valid_statuses = ['pending', 'approved', 'active', 'rejected', 'cancelled', 'expired']
+    if data.status not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"وضعیت نامعتبر است. وضعیت‌های معتبر: {', '.join(valid_statuses)}"
+        )
+    
+    reg.status = data.status
+    
+    # Update dates if provided
+    if data.start_date:
+        from datetime import datetime
+        reg.start_date = datetime.fromisoformat(data.start_date.replace('Z', '+00:00'))
+    
+    if data.end_date:
+        from datetime import datetime
+        reg.end_date = datetime.fromisoformat(data.end_date.replace('Z', '+00:00'))
+    
+    reg.save()
+    
+    return {
+        "message": "وضعیت ثبت‌نام با موفقیت به‌روزرسانی شد",
+        "status": reg.status
+    }

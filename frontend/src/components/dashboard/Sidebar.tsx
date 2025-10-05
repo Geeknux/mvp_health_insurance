@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -7,22 +8,69 @@ interface MenuItem {
   title: string;
   href: string;
   icon: string;
+  adminOnly?: boolean;
 }
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const menuItems: MenuItem[] = [
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setIsAdmin(userData.is_admin || false);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const allMenuItems: MenuItem[] = [
     { title: 'داشبورد', href: '/dashboard', icon: '🏠' },
     { title: 'طرح‌های بیمه', href: '/dashboard/insurance/plans', icon: '📋' },
-    { title: 'ثبت‌نام بیمه', href: '/dashboard/insurance/register', icon: '✍️' },
-    { title: 'ثبت‌نام‌های من', href: '/dashboard/registrations', icon: '📝' },
+    { title: 'ثبت‌نام‌ها', href: '/dashboard/registrations', icon: '📝' },
     { title: 'مدارس', href: '/dashboard/schools', icon: '🏫' },
-    { title: 'لیست طرح‌ها', href: '/admin/plans', icon: '📄' },
-    { title: 'لیست پوشش‌ها', href: '/admin/coverages', icon: '📑' },
-    { title: 'ایجاد طرح', href: '/admin/plans/create', icon: '➕' },
-    { title: 'ایجاد پوشش', href: '/admin/coverages/create', icon: '🔧' },
+    { title: 'مدیریت ثبت‌نام‌ها', href: '/admin/registrations', icon: '✅', adminOnly: true },
+    { title: 'لیست طرح‌ها', href: '/admin/plans', icon: '📄', adminOnly: true },
+    { title: 'لیست پوشش‌ها', href: '/admin/coverages', icon: '📑', adminOnly: true },
+    { title: 'ایجاد طرح', href: '/admin/plans/create', icon: '➕', adminOnly: true },
+    { title: 'ایجاد پوشش', href: '/admin/coverages/create', icon: '🔧', adminOnly: true },
   ];
+
+  // Filter menu items based on admin status
+  const menuItems = allMenuItems.filter(item => !item.adminOnly || isAdmin);
+
+  if (loading) {
+    return (
+      <aside className="w-64 bg-white min-h-screen shadow-sm border-l">
+        <nav className="p-4 space-y-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+          ))}
+        </nav>
+      </aside>
+    );
+  }
 
   return (
     <aside className="w-64 bg-white min-h-screen shadow-sm border-l">
