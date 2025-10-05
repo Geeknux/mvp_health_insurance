@@ -30,12 +30,19 @@ services:
     command: >
       sh -c "
         echo 'Waiting for database...' &&
-        while ! nc -z db 5432; do sleep 1; done &&
+        until pg_isready -h db -p 5432 -U postgres; do
+          echo 'Waiting for PostgreSQL to be ready...'
+          sleep 2
+        done &&
         echo 'Database is ready!' &&
+        sleep 3 &&
         cd django_app &&
+        echo 'Running migrations...' &&
         python manage.py migrate &&
+        echo 'Seeding data...' &&
         python seed_data.py &&
         cd ../fastapi_app &&
+        echo 'Starting FastAPI server...' &&
         uvicorn main:app --host 0.0.0.0 --port 8000 --reload
       "
     volumes:

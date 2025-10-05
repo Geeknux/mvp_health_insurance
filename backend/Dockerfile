@@ -26,6 +26,9 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . /app/
 
+# Make wait-for-db script executable
+RUN chmod +x /app/wait-for-db.sh
+
 # Expose port
 EXPOSE 8000
 
