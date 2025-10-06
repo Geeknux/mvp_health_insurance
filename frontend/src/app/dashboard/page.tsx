@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Sidebar from '@/components/dashboard/Sidebar';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 
 export default function DashboardPage() {
@@ -103,12 +102,8 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <Sidebar />
-
-        {/* Main Content */}
-        <main className="flex-1 p-6">
+      {/* Main Content */}
+      <div className="p-6">
           {/* Welcome Message */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -223,7 +218,6 @@ export default function DashboardPage() {
               <p>هیچ فعالیتی ثبت نشده است</p>
             </div>
           </div>
-        </main>
       </div>
     </div>
   );
