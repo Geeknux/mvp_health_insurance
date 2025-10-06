@@ -133,6 +133,12 @@ class InsuranceRegistration(models.Model):
         related_name='insurance_registrations',
         verbose_name='مدرسه'
     )
+    persons = models.ManyToManyField(
+        'users.Person',
+        blank=True,
+        related_name='insurance_registrations',
+        verbose_name='افراد تحت پوشش'
+    )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
