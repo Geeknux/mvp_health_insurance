@@ -51,6 +51,7 @@ export default function Sidebar() {
     { title: 'ثبت‌نام‌ها', href: '/dashboard/registrations', icon: '📝' },
     { title: 'مدارس', href: '/dashboard/schools', icon: '🏫' },
     { title: 'مدیریت ثبت‌نام‌ها', href: '/admin/registrations', icon: '✅', adminOnly: true },
+    { title: 'مدیریت مکان‌ها', href: '/admin/locations', icon: '🗺️', adminOnly: true },
     { title: 'لیست طرح‌ها', href: '/admin/plans', icon: '📄', adminOnly: true },
     { title: 'لیست پوشش‌ها', href: '/admin/coverages', icon: '📑', adminOnly: true },
     { title: 'ایجاد طرح', href: '/admin/plans/create', icon: '➕', adminOnly: true },

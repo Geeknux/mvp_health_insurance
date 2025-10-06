@@ -459,6 +459,543 @@ def delete_school(
         )
 
 
+# Location Management - State
+class CreateStateRequest(BaseModel):
+    name_fa: str = Field(..., min_length=2, max_length=100)
+    code: str = Field(..., min_length=1, max_length=10)
+
+
+class UpdateStateRequest(BaseModel):
+    name_fa: str | None = None
+    code: str | None = None
+
+
+class StateResponse(BaseModel):
+    id: str
+    name_fa: str
+    code: str
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.post("/states", response_model=StateResponse, status_code=status.HTTP_201_CREATED)
+def create_state(
+    data: CreateStateRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new state (Admin only)."""
+    if State.objects.filter(code=data.code).exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="استان با این کد قبلاً ثبت شده است"
+        )
+    
+    state = State.objects.create(
+        name_fa=data.name_fa,
+        code=data.code
+    )
+    
+    return StateResponse(
+        id=str(state.id),
+        name_fa=state.name_fa,
+        code=state.code,
+        created_at=state.created_at.isoformat()
+    )
+
+
+@router.put("/states/{state_id}", response_model=StateResponse)
+def update_state(
+    state_id: UUID4,
+    data: UpdateStateRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a state (Admin only)."""
+    try:
+        state = State.objects.get(id=state_id)
+    except State.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="استان یافت نشد"
+        )
+    
+    if data.name_fa:
+        state.name_fa = data.name_fa
+    if data.code:
+        if State.objects.filter(code=data.code).exclude(id=state_id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="استان با این کد قبلاً ثبت شده است"
+            )
+        state.code = data.code
+    
+    state.save()
+    
+    return StateResponse(
+        id=str(state.id),
+        name_fa=state.name_fa,
+        code=state.code,
+        created_at=state.created_at.isoformat()
+    )
+
+
+@router.delete("/states/{state_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_state(
+    state_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a state (Admin only)."""
+    try:
+        state = State.objects.get(id=state_id)
+        state.delete()
+    except State.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="استان یافت نشد"
+        )
+
+
+# Location Management - City
+class CreateCityRequest(BaseModel):
+    state_id: UUID4
+    name_fa: str = Field(..., min_length=2, max_length=100)
+    code: str = Field(..., min_length=1, max_length=10)
+
+
+class UpdateCityRequest(BaseModel):
+    name_fa: str | None = None
+    code: str | None = None
+
+
+class CityResponse(BaseModel):
+    id: str
+    state_id: str
+    name_fa: str
+    code: str
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.post("/cities", response_model=CityResponse, status_code=status.HTTP_201_CREATED)
+def create_city(
+    data: CreateCityRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new city (Admin only)."""
+    try:
+        state = State.objects.get(id=data.state_id)
+    except State.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="استان یافت نشد"
+        )
+    
+    if City.objects.filter(code=data.code).exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="شهر با این کد قبلاً ثبت شده است"
+        )
+    
+    city = City.objects.create(
+        state=state,
+        name_fa=data.name_fa,
+        code=data.code
+    )
+    
+    return CityResponse(
+        id=str(city.id),
+        state_id=str(city.state_id),
+        name_fa=city.name_fa,
+        code=city.code,
+        created_at=city.created_at.isoformat()
+    )
+
+
+@router.put("/cities/{city_id}", response_model=CityResponse)
+def update_city(
+    city_id: UUID4,
+    data: UpdateCityRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a city (Admin only)."""
+    try:
+        city = City.objects.get(id=city_id)
+    except City.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شهر یافت نشد"
+        )
+    
+    if data.name_fa:
+        city.name_fa = data.name_fa
+    if data.code:
+        if City.objects.filter(code=data.code).exclude(id=city_id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="شهر با این کد قبلاً ثبت شده است"
+            )
+        city.code = data.code
+    
+    city.save()
+    
+    return CityResponse(
+        id=str(city.id),
+        state_id=str(city.state_id),
+        name_fa=city.name_fa,
+        code=city.code,
+        created_at=city.created_at.isoformat()
+    )
+
+
+@router.delete("/cities/{city_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_city(
+    city_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a city (Admin only)."""
+    try:
+        city = City.objects.get(id=city_id)
+        city.delete()
+    except City.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شهر یافت نشد"
+        )
+
+
+# Location Management - County
+class CreateCountyRequest(BaseModel):
+    city_id: UUID4
+    name_fa: str = Field(..., min_length=2, max_length=100)
+    code: str = Field(..., min_length=1, max_length=10)
+
+
+class UpdateCountyRequest(BaseModel):
+    name_fa: str | None = None
+    code: str | None = None
+
+
+class CountyResponse(BaseModel):
+    id: str
+    city_id: str
+    name_fa: str
+    code: str
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.post("/counties", response_model=CountyResponse, status_code=status.HTTP_201_CREATED)
+def create_county(
+    data: CreateCountyRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new county (Admin only)."""
+    try:
+        city = City.objects.get(id=data.city_id)
+    except City.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شهر یافت نشد"
+        )
+    
+    if County.objects.filter(code=data.code).exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="شهرستان با این کد قبلاً ثبت شده است"
+        )
+    
+    county = County.objects.create(
+        city=city,
+        name_fa=data.name_fa,
+        code=data.code
+    )
+    
+    return CountyResponse(
+        id=str(county.id),
+        city_id=str(county.city_id),
+        name_fa=county.name_fa,
+        code=county.code,
+        created_at=county.created_at.isoformat()
+    )
+
+
+@router.put("/counties/{county_id}", response_model=CountyResponse)
+def update_county(
+    county_id: UUID4,
+    data: UpdateCountyRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a county (Admin only)."""
+    try:
+        county = County.objects.get(id=county_id)
+    except County.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شهرستان یافت نشد"
+        )
+    
+    if data.name_fa:
+        county.name_fa = data.name_fa
+    if data.code:
+        if County.objects.filter(code=data.code).exclude(id=county_id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="شهرستان با این کد قبلاً ثبت شده است"
+            )
+        county.code = data.code
+    
+    county.save()
+    
+    return CountyResponse(
+        id=str(county.id),
+        city_id=str(county.city_id),
+        name_fa=county.name_fa,
+        code=county.code,
+        created_at=county.created_at.isoformat()
+    )
+
+
+@router.delete("/counties/{county_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_county(
+    county_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a county (Admin only)."""
+    try:
+        county = County.objects.get(id=county_id)
+        county.delete()
+    except County.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شهرستان یافت نشد"
+        )
+
+
+# Location Management - Region
+class CreateRegionRequest(BaseModel):
+    county_id: UUID4
+    name_fa: str = Field(..., min_length=2, max_length=100)
+    code: str = Field(..., min_length=1, max_length=10)
+
+
+class UpdateRegionRequest(BaseModel):
+    name_fa: str | None = None
+    code: str | None = None
+
+
+class RegionResponse(BaseModel):
+    id: str
+    county_id: str
+    name_fa: str
+    code: str
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.post("/regions", response_model=RegionResponse, status_code=status.HTTP_201_CREATED)
+def create_region(
+    data: CreateRegionRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new region (Admin only)."""
+    try:
+        county = County.objects.get(id=data.county_id)
+    except County.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شهرستان یافت نشد"
+        )
+    
+    if Region.objects.filter(code=data.code).exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="بخش با این کد قبلاً ثبت شده است"
+        )
+    
+    region = Region.objects.create(
+        county=county,
+        name_fa=data.name_fa,
+        code=data.code
+    )
+    
+    return RegionResponse(
+        id=str(region.id),
+        county_id=str(region.county_id),
+        name_fa=region.name_fa,
+        code=region.code,
+        created_at=region.created_at.isoformat()
+    )
+
+
+@router.put("/regions/{region_id}", response_model=RegionResponse)
+def update_region(
+    region_id: UUID4,
+    data: UpdateRegionRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a region (Admin only)."""
+    try:
+        region = Region.objects.get(id=region_id)
+    except Region.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="بخش یافت نشد"
+        )
+    
+    if data.name_fa:
+        region.name_fa = data.name_fa
+    if data.code:
+        if Region.objects.filter(code=data.code).exclude(id=region_id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="بخش با این کد قبلاً ثبت شده است"
+            )
+        region.code = data.code
+    
+    region.save()
+    
+    return RegionResponse(
+        id=str(region.id),
+        county_id=str(region.county_id),
+        name_fa=region.name_fa,
+        code=region.code,
+        created_at=region.created_at.isoformat()
+    )
+
+
+@router.delete("/regions/{region_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_region(
+    region_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a region (Admin only)."""
+    try:
+        region = Region.objects.get(id=region_id)
+        region.delete()
+    except Region.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="بخش یافت نشد"
+        )
+
+
+# Location Management - District
+class CreateDistrictRequest(BaseModel):
+    region_id: UUID4
+    name_fa: str = Field(..., min_length=2, max_length=100)
+    code: str = Field(..., min_length=1, max_length=10)
+
+
+class UpdateDistrictRequest(BaseModel):
+    name_fa: str | None = None
+    code: str | None = None
+
+
+class DistrictResponse(BaseModel):
+    id: str
+    region_id: str
+    name_fa: str
+    code: str
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.post("/districts", response_model=DistrictResponse, status_code=status.HTTP_201_CREATED)
+def create_district(
+    data: CreateDistrictRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new district (Admin only)."""
+    try:
+        region = Region.objects.get(id=data.region_id)
+    except Region.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="بخش یافت نشد"
+        )
+    
+    if District.objects.filter(code=data.code).exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ناحیه با این کد قبلاً ثبت شده است"
+        )
+    
+    district = District.objects.create(
+        region=region,
+        name_fa=data.name_fa,
+        code=data.code
+    )
+    
+    return DistrictResponse(
+        id=str(district.id),
+        region_id=str(district.region_id),
+        name_fa=district.name_fa,
+        code=district.code,
+        created_at=district.created_at.isoformat()
+    )
+
+
+@router.put("/districts/{district_id}", response_model=DistrictResponse)
+def update_district(
+    district_id: UUID4,
+    data: UpdateDistrictRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a district (Admin only)."""
+    try:
+        district = District.objects.get(id=district_id)
+    except District.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ناحیه یافت نشد"
+        )
+    
+    if data.name_fa:
+        district.name_fa = data.name_fa
+    if data.code:
+        if District.objects.filter(code=data.code).exclude(id=district_id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="ناحیه با این کد قبلاً ثبت شده است"
+            )
+        district.code = data.code
+    
+    district.save()
+    
+    return DistrictResponse(
+        id=str(district.id),
+        region_id=str(district.region_id),
+        name_fa=district.name_fa,
+        code=district.code,
+        created_at=district.created_at.isoformat()
+    )
+
+
+@router.delete("/districts/{district_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_district(
+    district_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a district (Admin only)."""
+    try:
+        district = District.objects.get(id=district_id)
+        district.delete()
+    except District.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ناحیه یافت نشد"
+        )
+
+
 # Admin Statistics
 class AdminStatsResponse(BaseModel):
     total_users: int
