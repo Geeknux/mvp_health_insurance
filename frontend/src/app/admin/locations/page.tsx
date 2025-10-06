@@ -12,9 +12,14 @@ interface Location {
   code: string;
   created_at: string;
   state_id?: string;
+  state_name?: string;
   city_id?: string;
+  city_name?: string;
   county_id?: string;
+  county_name?: string;
   region_id?: string;
+  region_name?: string;
+  district_name?: string;
 }
 
 export default function LocationsManagementPage() {
@@ -383,6 +388,14 @@ export default function LocationsManagementPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">نام</th>
+                {activeTab !== 'state' && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                    {activeTab === 'city' && 'استان'}
+                    {activeTab === 'county' && 'شهر'}
+                    {activeTab === 'region' && 'شهرستان'}
+                    {activeTab === 'district' && 'بخش'}
+                  </th>
+                )}
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">کد</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاریخ ایجاد</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">عملیات</th>
@@ -391,7 +404,7 @@ export default function LocationsManagementPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {locations.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={activeTab === 'state' ? 4 : 5} className="px-6 py-12 text-center text-gray-500">
                     موردی یافت نشد
                   </td>
                 </tr>
@@ -401,6 +414,14 @@ export default function LocationsManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {location.name_fa}
                     </td>
+                    {activeTab !== 'state' && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {activeTab === 'city' && location.state_name}
+                        {activeTab === 'county' && location.city_name}
+                        {activeTab === 'region' && location.county_name}
+                        {activeTab === 'district' && location.region_name}
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{location.code}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(location.created_at).toLocaleDateString('fa-IR')}

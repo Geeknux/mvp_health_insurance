@@ -325,6 +325,7 @@ class UpdateSchoolRequest(BaseModel):
 class SchoolResponse(BaseModel):
     id: str
     district_id: str
+    district_name: str
     name_fa: str
     code: str
     school_type: str
@@ -368,6 +369,7 @@ def create_school(
     return SchoolResponse(
         id=str(school.id),
         district_id=str(school.district_id),
+        district_name=school.district.name_fa,
         name_fa=school.name_fa,
         code=school.code,
         school_type=school.school_type,
@@ -380,12 +382,13 @@ def create_school(
 @router.get("/schools", response_model=List[SchoolResponse])
 def get_all_schools(current_user: User = Depends(get_current_admin_user)):
     """Get all schools (Admin only)."""
-    schools = School.objects.all()
+    schools = School.objects.select_related('district').all()
     
     return [
         SchoolResponse(
             id=str(school.id),
             district_id=str(school.district_id),
+            district_name=school.district.name_fa,
             name_fa=school.name_fa,
             code=school.code,
             school_type=school.school_type,
@@ -434,6 +437,7 @@ def update_school(
     return SchoolResponse(
         id=str(school.id),
         district_id=str(school.district_id),
+        district_name=school.district.name_fa,
         name_fa=school.name_fa,
         code=school.code,
         school_type=school.school_type,
@@ -587,6 +591,7 @@ class UpdateCityRequest(BaseModel):
 class CityResponse(BaseModel):
     id: str
     state_id: str
+    state_name: str
     name_fa: str
     code: str
     created_at: str
@@ -624,6 +629,7 @@ def create_city(
     return CityResponse(
         id=str(city.id),
         state_id=str(city.state_id),
+        state_name=city.state.name_fa,
         name_fa=city.name_fa,
         code=city.code,
         created_at=city.created_at.isoformat()
@@ -660,6 +666,7 @@ def update_city(
     return CityResponse(
         id=str(city.id),
         state_id=str(city.state_id),
+        state_name=city.state.name_fa,
         name_fa=city.name_fa,
         code=city.code,
         created_at=city.created_at.isoformat()
@@ -669,12 +676,13 @@ def update_city(
 @router.get("/cities", response_model=List[CityResponse])
 def get_all_cities_admin(current_user: User = Depends(get_current_admin_user)):
     """Get all cities (Admin only)."""
-    cities = City.objects.all().order_by('name_fa')
+    cities = City.objects.select_related('state').all().order_by('name_fa')
     
     return [
         CityResponse(
             id=str(city.id),
             state_id=str(city.state_id),
+            state_name=city.state.name_fa,
             name_fa=city.name_fa,
             code=city.code,
             created_at=city.created_at.isoformat()
@@ -714,6 +722,7 @@ class UpdateCountyRequest(BaseModel):
 class CountyResponse(BaseModel):
     id: str
     city_id: str
+    city_name: str
     name_fa: str
     code: str
     created_at: str
@@ -751,6 +760,7 @@ def create_county(
     return CountyResponse(
         id=str(county.id),
         city_id=str(county.city_id),
+        city_name=county.city.name_fa,
         name_fa=county.name_fa,
         code=county.code,
         created_at=county.created_at.isoformat()
@@ -787,6 +797,7 @@ def update_county(
     return CountyResponse(
         id=str(county.id),
         city_id=str(county.city_id),
+        city_name=county.city.name_fa,
         name_fa=county.name_fa,
         code=county.code,
         created_at=county.created_at.isoformat()
@@ -796,12 +807,13 @@ def update_county(
 @router.get("/counties", response_model=List[CountyResponse])
 def get_all_counties_admin(current_user: User = Depends(get_current_admin_user)):
     """Get all counties (Admin only)."""
-    counties = County.objects.all().order_by('name_fa')
+    counties = County.objects.select_related('city').all().order_by('name_fa')
     
     return [
         CountyResponse(
             id=str(county.id),
             city_id=str(county.city_id),
+            city_name=county.city.name_fa,
             name_fa=county.name_fa,
             code=county.code,
             created_at=county.created_at.isoformat()
@@ -841,6 +853,7 @@ class UpdateRegionRequest(BaseModel):
 class RegionResponse(BaseModel):
     id: str
     county_id: str
+    county_name: str
     name_fa: str
     code: str
     created_at: str
@@ -878,6 +891,7 @@ def create_region(
     return RegionResponse(
         id=str(region.id),
         county_id=str(region.county_id),
+        county_name=region.county.name_fa,
         name_fa=region.name_fa,
         code=region.code,
         created_at=region.created_at.isoformat()
@@ -914,6 +928,7 @@ def update_region(
     return RegionResponse(
         id=str(region.id),
         county_id=str(region.county_id),
+        county_name=region.county.name_fa,
         name_fa=region.name_fa,
         code=region.code,
         created_at=region.created_at.isoformat()
@@ -923,12 +938,13 @@ def update_region(
 @router.get("/regions", response_model=List[RegionResponse])
 def get_all_regions_admin(current_user: User = Depends(get_current_admin_user)):
     """Get all regions (Admin only)."""
-    regions = Region.objects.all().order_by('name_fa')
+    regions = Region.objects.select_related('county').all().order_by('name_fa')
     
     return [
         RegionResponse(
             id=str(region.id),
             county_id=str(region.county_id),
+            county_name=region.county.name_fa,
             name_fa=region.name_fa,
             code=region.code,
             created_at=region.created_at.isoformat()
@@ -968,6 +984,7 @@ class UpdateDistrictRequest(BaseModel):
 class DistrictResponse(BaseModel):
     id: str
     region_id: str
+    region_name: str
     name_fa: str
     code: str
     created_at: str
@@ -1005,6 +1022,7 @@ def create_district(
     return DistrictResponse(
         id=str(district.id),
         region_id=str(district.region_id),
+        region_name=district.region.name_fa,
         name_fa=district.name_fa,
         code=district.code,
         created_at=district.created_at.isoformat()
@@ -1041,6 +1059,7 @@ def update_district(
     return DistrictResponse(
         id=str(district.id),
         region_id=str(district.region_id),
+        region_name=district.region.name_fa,
         name_fa=district.name_fa,
         code=district.code,
         created_at=district.created_at.isoformat()
@@ -1050,12 +1069,13 @@ def update_district(
 @router.get("/districts", response_model=List[DistrictResponse])
 def get_all_districts_admin(current_user: User = Depends(get_current_admin_user)):
     """Get all districts (Admin only)."""
-    districts = District.objects.all().order_by('name_fa')
+    districts = District.objects.select_related('region').all().order_by('name_fa')
     
     return [
         DistrictResponse(
             id=str(district.id),
             region_id=str(district.region_id),
+            region_name=district.region.name_fa,
             name_fa=district.name_fa,
             code=district.code,
             created_at=district.created_at.isoformat()
