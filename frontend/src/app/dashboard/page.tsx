@@ -84,20 +84,6 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4 space-x-reverse">
-              <div className="text-left">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.first_name} {user?.last_name}
-                </p>
-                <p className="text-xs text-gray-600">{user?.national_id}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
-              >
-                خروج
-              </button>
-            </div>
           </div>
         </div>
       </header>
