@@ -540,6 +540,22 @@ def update_state(
     )
 
 
+@router.get("/states", response_model=List[StateResponse])
+def get_all_states_admin(current_user: User = Depends(get_current_admin_user)):
+    """Get all states (Admin only)."""
+    states = State.objects.all().order_by('name_fa')
+    
+    return [
+        StateResponse(
+            id=str(state.id),
+            name_fa=state.name_fa,
+            code=state.code,
+            created_at=state.created_at.isoformat()
+        )
+        for state in states
+    ]
+
+
 @router.delete("/states/{state_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_state(
     state_id: UUID4,
@@ -648,6 +664,23 @@ def update_city(
         code=city.code,
         created_at=city.created_at.isoformat()
     )
+
+
+@router.get("/cities", response_model=List[CityResponse])
+def get_all_cities_admin(current_user: User = Depends(get_current_admin_user)):
+    """Get all cities (Admin only)."""
+    cities = City.objects.all().order_by('name_fa')
+    
+    return [
+        CityResponse(
+            id=str(city.id),
+            state_id=str(city.state_id),
+            name_fa=city.name_fa,
+            code=city.code,
+            created_at=city.created_at.isoformat()
+        )
+        for city in cities
+    ]
 
 
 @router.delete("/cities/{city_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -760,6 +793,23 @@ def update_county(
     )
 
 
+@router.get("/counties", response_model=List[CountyResponse])
+def get_all_counties_admin(current_user: User = Depends(get_current_admin_user)):
+    """Get all counties (Admin only)."""
+    counties = County.objects.all().order_by('name_fa')
+    
+    return [
+        CountyResponse(
+            id=str(county.id),
+            city_id=str(county.city_id),
+            name_fa=county.name_fa,
+            code=county.code,
+            created_at=county.created_at.isoformat()
+        )
+        for county in counties
+    ]
+
+
 @router.delete("/counties/{county_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_county(
     county_id: UUID4,
@@ -870,6 +920,23 @@ def update_region(
     )
 
 
+@router.get("/regions", response_model=List[RegionResponse])
+def get_all_regions_admin(current_user: User = Depends(get_current_admin_user)):
+    """Get all regions (Admin only)."""
+    regions = Region.objects.all().order_by('name_fa')
+    
+    return [
+        RegionResponse(
+            id=str(region.id),
+            county_id=str(region.county_id),
+            name_fa=region.name_fa,
+            code=region.code,
+            created_at=region.created_at.isoformat()
+        )
+        for region in regions
+    ]
+
+
 @router.delete("/regions/{region_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_region(
     region_id: UUID4,
@@ -978,6 +1045,23 @@ def update_district(
         code=district.code,
         created_at=district.created_at.isoformat()
     )
+
+
+@router.get("/districts", response_model=List[DistrictResponse])
+def get_all_districts_admin(current_user: User = Depends(get_current_admin_user)):
+    """Get all districts (Admin only)."""
+    districts = District.objects.all().order_by('name_fa')
+    
+    return [
+        DistrictResponse(
+            id=str(district.id),
+            region_id=str(district.region_id),
+            name_fa=district.name_fa,
+            code=district.code,
+            created_at=district.created_at.isoformat()
+        )
+        for district in districts
+    ]
 
 
 @router.delete("/districts/{district_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -78,16 +78,16 @@ export default function LocationsManagementPage() {
     const token = localStorage.getItem('access_token');
     try {
       const [statesRes, citiesRes, countiesRes, regionsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/locations/states`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/states`, {
           headers: { 'Authorization': `Bearer ${token}` },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/locations/cities`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/cities`, {
           headers: { 'Authorization': `Bearer ${token}` },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/locations/counties`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/counties`, {
           headers: { 'Authorization': `Bearer ${token}` },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/locations/regions`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/regions`, {
           headers: { 'Authorization': `Bearer ${token}` },
         }),
       ]);
@@ -113,7 +113,7 @@ export default function LocationsManagementPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/locations/${endpoints[activeTab]}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/${endpoints[activeTab]}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
