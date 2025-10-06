@@ -1,7 +1,19 @@
+import Image from 'next/image';
+
 export default function Home() {
   return (
     <main className="min-h-screen flex items-center justify-center">
       <div className="text-center">
+      <div className="flex justify-center mb-6">
+        <Image
+          src="/ministry_logo.jpg"
+          alt="لوگوی وزارت آموزش و پرورش"
+          width={200}
+          height={200}
+          className="object-contain"
+          priority
+        />
+      </div>
         <h1 className="text-4xl font-bold text-primary-600 mb-4">
           سامانه بیمه تکمیلی سلامت
         </h1>
