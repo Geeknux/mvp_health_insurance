@@ -6,8 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, UUID4, Field
 from apps.insurance.models import InsurancePlan, PlanCoverage, InsuranceRegistration
 from apps.locations.models import State, City, County, Region, District, School
-from apps.users.models import User
+from apps.users.models import User, Person
 from core.dependencies import get_current_admin_user
+from datetime import date
 
 router = APIRouter()
 
@@ -1310,3 +1311,135 @@ def update_registration_status(
         "message": "وضعیت ثبت‌نام با موفقیت به‌روزرسانی شد",
         "status": reg.status
     }
+
+
+# Person Management Endpoints
+class PersonAdminResponse(BaseModel):
+    id: str
+    user_id: str
+    user_name: str
+    user_national_id: str
+    first_name: str
+    last_name: str
+    national_code: str
+    birth_date: str
+    relation: str
+    relation_display: str
+    age: int
+    created_at: str
+    updated_at: str
+    
+    class Config:
+        from_attributes = True
+
+
+@router.get("/persons", response_model=List[PersonAdminResponse])
+def get_all_persons_admin(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Get all persons (Admin only)."""
+    persons = Person.objects.select_related('user').all().order_by('-created_at')[skip:skip + limit]
+    
+    return [
+        PersonAdminResponse(
+            id=str(person.id),
+            user_id=str(person.user.id),
+            user_name=f"{person.user.first_name} {person.user.last_name}",
+            user_national_id=person.user.national_id,
+            first_name=person.first_name,
+            last_name=person.last_name,
+            national_code=person.national_code,
+            birth_date=person.birth_date.isoformat(),
+            relation=person.relation,
+            relation_display=person.get_relation_display_fa(),
+            age=person.get_age(),
+            created_at=person.created_at.isoformat(),
+            updated_at=person.updated_at.isoformat()
+        )
+        for person in persons
+    ]
+
+
+@router.get("/persons/{person_id}", response_model=PersonAdminResponse)
+def get_person_admin(
+    person_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Get a specific person by ID (Admin only)."""
+    try:
+        person = Person.objects.select_related('user').get(id=person_id)
+    except Person.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شخص یافت نشد"
+        )
+    
+    return PersonAdminResponse(
+        id=str(person.id),
+        user_id=str(person.user.id),
+        user_name=f"{person.user.first_name} {person.user.last_name}",
+        user_national_id=person.user.national_id,
+        first_name=person.first_name,
+        last_name=person.last_name,
+        national_code=person.national_code,
+        birth_date=person.birth_date.isoformat(),
+        relation=person.relation,
+        relation_display=person.get_relation_display_fa(),
+        age=person.get_age(),
+        created_at=person.created_at.isoformat(),
+        updated_at=person.updated_at.isoformat()
+    )
+
+
+@router.delete("/persons/{person_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_person_admin(
+    person_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Delete a person (Admin only)."""
+    try:
+        person = Person.objects.get(id=person_id)
+        person.delete()
+    except Person.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="شخص یافت نشد"
+        )
+
+
+@router.get("/users/{user_id}/persons", response_model=List[PersonAdminResponse])
+def get_user_persons_admin(
+    user_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Get all persons for a specific user (Admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="کاربر یافت نشد"
+        )
+    
+    persons = Person.objects.filter(user=user).order_by('-created_at')
+    
+    return [
+        PersonAdminResponse(
+            id=str(person.id),
+            user_id=str(person.user.id),
+            user_name=f"{person.user.first_name} {person.user.last_name}",
+            user_national_id=person.user.national_id,
+            first_name=person.first_name,
+            last_name=person.last_name,
+            national_code=person.national_code,
+            birth_date=person.birth_date.isoformat(),
+            relation=person.relation,
+            relation_display=person.get_relation_display_fa(),
+            age=person.get_age(),
+            created_at=person.created_at.isoformat(),
+            updated_at=person.updated_at.isoformat()
+        )
+        for person in persons
+    ]

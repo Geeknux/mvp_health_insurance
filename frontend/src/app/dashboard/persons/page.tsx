@@ -324,14 +324,31 @@ export default function PersonsPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                      <span className="text-2xl">
-                        {person.relation === 'child' && '👶'}
-                        {person.relation === 'spouse' && '💑'}
-                        {person.relation === 'parent' && '👴'}
-                        {person.relation === 'sibling' && '👫'}
-                        {person.relation === 'self' && '👤'}
-                        {person.relation === 'other' && '👥'}
-                      </span>
+                      {person.relation === 'child' && (
+                        <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                      {person.relation === 'spouse' && (
+                        <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                        </svg>
+                      )}
+                      {person.relation === 'parent' && (
+                        <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        </svg>
+                      )}
+                      {person.relation === 'sibling' && (
+                        <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                        </svg>
+                      )}
+                      {person.relation === 'other' && (
+                        <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        </svg>
+                      )}
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
