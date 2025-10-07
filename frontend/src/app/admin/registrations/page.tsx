@@ -55,7 +55,7 @@ export default function AdminRegistrationsPage() {
   const fetchRegistrations = async () => {
     const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/stats`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/registrations`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -63,7 +63,7 @@ export default function AdminRegistrationsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setRegistrations(data.recent_registrations || []);
+        setRegistrations(data || []);
       }
     } catch (error) {
       console.error('Error fetching registrations:', error);
