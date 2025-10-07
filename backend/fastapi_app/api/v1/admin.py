@@ -1443,3 +1443,127 @@ def get_user_persons_admin(
         )
         for person in persons
     ]
+
+
+# User Password Management Models
+class UpdateUserPasswordRequest(BaseModel):
+    new_password: str = Field(..., min_length=6, max_length=100)
+
+
+class ResetUserPasswordRequest(BaseModel):
+    default_password: str = Field(default="user123", min_length=6, max_length=100)
+
+
+class UserPasswordResponse(BaseModel):
+    user_id: str
+    national_id: str
+    full_name: str
+    message: str
+
+
+# User Password Management Endpoints
+@router.put("/users/{user_id}/password", response_model=UserPasswordResponse)
+def update_user_password(
+    user_id: UUID4,
+    data: UpdateUserPasswordRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update a user's password (Admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="کاربر یافت نشد"
+        )
+    
+    # Set new password
+    user.set_password(data.new_password)
+    user.save()
+    
+    return UserPasswordResponse(
+        user_id=str(user.id),
+        national_id=user.national_id,
+        full_name=f"{user.first_name} {user.last_name}",
+        message="رمز عبور با موفقیت تغییر یافت"
+    )
+
+
+@router.post("/users/{user_id}/reset-password", response_model=UserPasswordResponse)
+def reset_user_password(
+    user_id: UUID4,
+    data: ResetUserPasswordRequest = ResetUserPasswordRequest(),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Reset a user's password to default (Admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="کاربر یافت نشد"
+        )
+    
+    # Reset to default password
+    user.set_password(data.default_password)
+    user.save()
+    
+    return UserPasswordResponse(
+        user_id=str(user.id),
+        national_id=user.national_id,
+        full_name=f"{user.first_name} {user.last_name}",
+        message=f"رمز عبور به حالت پیش‌فرض بازنشانی شد: {data.default_password}"
+    )
+
+
+@router.get("/users", response_model=List[dict])
+def get_all_users(
+    current_user: User = Depends(get_current_admin_user),
+    skip: int = 0,
+    limit: int = 100
+):
+    """Get all users (Admin only)."""
+    users = User.objects.all().order_by('-created_at')[skip:skip + limit]
+    
+    return [
+        {
+            'id': str(user.id),
+            'national_id': user.national_id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'phone': user.phone,
+            'is_admin': user.is_admin,
+            'is_active': user.is_active,
+            'created_at': user.created_at.isoformat(),
+        }
+        for user in users
+    ]
+
+
+@router.get("/users/{user_id}", response_model=dict)
+def get_user_by_id(
+    user_id: UUID4,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Get a specific user by ID (Admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="کاربر یافت نشد"
+        )
+    
+    return {
+        'id': str(user.id),
+        'national_id': user.national_id,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'phone': user.phone,
+        'is_admin': user.is_admin,
+        'is_active': user.is_active,
+        'created_at': user.created_at.isoformat(),
+        'updated_at': user.updated_at.isoformat(),
+    }

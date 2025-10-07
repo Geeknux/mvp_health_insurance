@@ -68,6 +68,7 @@ export default function Sidebar() {
     { title: 'طرح‌های بیمه', href: '/dashboard/insurance/plans', icon: '📋', userOnly: true },
     { title: 'ثبت‌نام‌ها', href: '/dashboard/registrations', icon: '📝', userOnly: true },
     { title: 'افراد تحت پوشش', href: '/dashboard/persons', icon: '👥', userOnly: true },
+    { title: 'مدیریت کاربران', href: '/admin/users', icon: '👤', adminOnly: true },
     { title: 'مدیریت ثبت‌نام‌ها', href: '/admin/registrations', icon: '✅', adminOnly: true },
     { title: 'مدیریت افراد', href: '/admin/persons', icon: '👥', adminOnly: true },
     { title: 'مدیریت مدارس', href: '/admin/schools', icon: '🏫', adminOnly: true },
