@@ -2,6 +2,28 @@
 
 import { useEffect, useState } from 'react';
 
+// Helper function to convert Gregorian month to Jalali
+const getJalaliMonthName = (gregorianDate: string) => {
+  const months = [
+    'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+    'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+  ];
+  
+  const [year, month] = gregorianDate.split('-').map(Number);
+  const date = new Date(year, month - 1, 1);
+  
+  // Simple Gregorian to Jalali conversion (approximate)
+  // For accurate conversion, you'd use a library like moment-jalaali
+  const jalaliYear = year - 621;
+  let jalaliMonth = month - 3;
+  
+  if (jalaliMonth <= 0) {
+    jalaliMonth += 12;
+  }
+  
+  return `${months[jalaliMonth - 1]} ${jalaliYear}`;
+};
+
 interface RegistrationStats {
   total: number;
   pending: number;
@@ -170,7 +192,7 @@ export default function AdminCharts() {
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-600 text-center">
-                    {item.month_name.split(' ')[0]}
+                    {getJalaliMonthName(item.month)}
                   </div>
                 </div>
               );
@@ -258,33 +280,110 @@ export default function AdminCharts() {
         )}
       </div>
 
-      {/* Age Distribution Chart */}
+      {/* Age Distribution Chart - Pie Chart */}
       {personStats && (
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-6">توزیع سنی افراد</h3>
-          <div className="flex items-end justify-between h-48 gap-2">
-            {Object.entries(personStats.age_distribution).map(([ageGroup, count], index) => {
-              const maxCount = getMaxValue(Object.values(personStats.age_distribution));
-              const heightPercent = (count / maxCount) * 100;
-              
-              return (
-                <div key={ageGroup} className="flex-1 flex flex-col items-center">
-                  <div className="relative w-full flex items-end justify-center h-32">
-                    <div 
-                      className="w-full bg-indigo-500 rounded-t-lg transition-all duration-500 hover:bg-indigo-600 relative group"
-                      style={{ height: `${heightPercent}%` }}
-                    >
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {count} نفر
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-600 text-center">
-                    {ageGroup} سال
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            {/* Pie Chart */}
+            <div className="relative w-64 h-64">
+              <svg viewBox="0 0 200 200" className="transform -rotate-90">
+                {(() => {
+                  const total = Object.values(personStats.age_distribution).reduce((sum: number, val) => sum + (val as number), 0);
+                  let currentAngle = 0;
+                  const colors = [
+                    '#6366F1', // Indigo
+                    '#8B5CF6', // Purple
+                    '#EC4899', // Pink
+                    '#F59E0B', // Amber
+                    '#10B981', // Green
+                    '#3B82F6'  // Blue
+                  ];
+                  
+                  return Object.entries(personStats.age_distribution).map(([ageGroup, count], index) => {
+                    const percentage = (count as number) / total;
+                    const angle = percentage * 360;
+                    const startAngle = currentAngle;
+                    const endAngle = currentAngle + angle;
+                    
+                    // Calculate path for pie slice
+                    const startRad = (startAngle * Math.PI) / 180;
+                    const endRad = (endAngle * Math.PI) / 180;
+                    
+                    const x1 = 100 + 90 * Math.cos(startRad);
+                    const y1 = 100 + 90 * Math.sin(startRad);
+                    const x2 = 100 + 90 * Math.cos(endRad);
+                    const y2 = 100 + 90 * Math.sin(endRad);
+                    
+                    const largeArc = angle > 180 ? 1 : 0;
+                    
+                    const pathData = [
+                      `M 100 100`,
+                      `L ${x1} ${y1}`,
+                      `A 90 90 0 ${largeArc} 1 ${x2} ${y2}`,
+                      `Z`
+                    ].join(' ');
+                    
+                    currentAngle = endAngle;
+                    
+                    return (
+                      <g key={ageGroup}>
+                        <path
+                          d={pathData}
+                          fill={colors[index % colors.length]}
+                          className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+                          style={{ transformOrigin: 'center' }}
+                        />
+                      </g>
+                    );
+                  });
+                })()}
+              </svg>
+              {/* Center circle for donut effect */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">{personStats.total}</div>
+                    <div className="text-xs text-gray-600">نفر</div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+            
+            {/* Legend */}
+            <div className="flex-1 space-y-3">
+              {(() => {
+                const total = Object.values(personStats.age_distribution).reduce((sum: number, val) => sum + (val as number), 0);
+                const colors = [
+                  '#6366F1', // Indigo
+                  '#8B5CF6', // Purple
+                  '#EC4899', // Pink
+                  '#F59E0B', // Amber
+                  '#10B981', // Green
+                  '#3B82F6'  // Blue
+                ];
+                
+                return Object.entries(personStats.age_distribution).map(([ageGroup, count], index) => {
+                  const percentage = ((count as number) / total * 100).toFixed(1);
+                  
+                  return (
+                    <div key={ageGroup} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: colors[index % colors.length] }}
+                        ></div>
+                        <span className="text-sm font-medium text-gray-700">{ageGroup} سال</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-900">{count} نفر</span>
+                        <span className="text-xs text-gray-500">({percentage}%)</span>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
           </div>
         </div>
       )}

@@ -14,6 +14,28 @@ from core.dependencies import get_current_user, get_current_admin_user
 router = APIRouter()
 
 
+# Helper function to convert Gregorian to Jalali month name
+def get_jalali_month_name(gregorian_date: datetime) -> str:
+    """Convert Gregorian date to Jalali month name."""
+    months = [
+        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+        'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+    ]
+    
+    # Simple Gregorian to Jalali conversion (approximate)
+    year = gregorian_date.year
+    month = gregorian_date.month
+    
+    jalali_year = year - 621
+    jalali_month = month - 3
+    
+    if jalali_month <= 0:
+        jalali_month += 12
+        jalali_year -= 1
+    
+    return f"{months[jalali_month - 1]} {jalali_year}"
+
+
 # Response Models
 class OverviewStats(BaseModel):
     total_users: int
@@ -139,7 +161,7 @@ def get_admin_registration_stats(current_user: User = Depends(get_current_admin_
         
         by_month.append({
             'month': month_start.strftime('%Y-%m'),
-            'month_name': month_start.strftime('%B %Y'),
+            'month_name': get_jalali_month_name(month_start),
             'count': count
         })
     
