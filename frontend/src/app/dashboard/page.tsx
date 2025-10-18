@@ -90,48 +90,25 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
           {/* Welcome Message */}
           <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  خوش آمدید، {user?.first_name}
-                  {user?.is_admin && (
-                    <span className="mr-3 text-sm bg-primary-100 text-primary-700 px-3 py-1 rounded-full font-medium">
-                      مدیر سیستم
-                    </span>
-                  )}
-                </h2>
-                <p className="text-gray-600">
-                  {user?.is_admin 
-                    ? 'پنل مدیریت سامانه بیمه تکمیلی سلامت' 
-                    : 'به سامانه مدیریت بیمه تکمیلی سلامت خوش آمدید'
-                  }
-                </p>
-              </div>
-              {user?.is_admin && (
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <a
-                    href="/admin/plans"
-                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium inline-flex items-center"
-                  >
-                    <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                    </svg>
-                    مدیریت طرح‌ها
-                  </a>
-                  <a
-                    href="/admin/schools/add"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium inline-flex items-center"
-                  >
-                    <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z" />
-                    </svg>
-                    افزودن مدرسه
-                  </a>
-                </div>
-              )}
+            {/* Welcome Text and User Info */}
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                خوش آمدید، {user?.first_name}
+                {user?.is_admin && (
+                  <span className="mr-2 sm:mr-3 text-xs sm:text-sm bg-primary-100 text-primary-700 px-2 sm:px-3 py-1 rounded-full font-medium">
+                    مدیر سیستم
+                  </span>
+                )}
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600">
+                {user?.is_admin 
+                  ? 'پنل مدیریت سامانه بیمه تکمیلی سلامت' 
+                  : 'به سامانه مدیریت بیمه تکمیلی سلامت خوش آمدید'
+                }
+              </p>
             </div>
           </div>
 
