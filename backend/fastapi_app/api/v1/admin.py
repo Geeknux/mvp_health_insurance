@@ -1567,3 +1567,64 @@ def get_user_by_id(
         'created_at': user.created_at.isoformat(),
         'updated_at': user.updated_at.isoformat(),
     }
+
+
+class UpdateUserRequest(BaseModel):
+    first_name: str | None = Field(None, min_length=2, max_length=50)
+    last_name: str | None = Field(None, min_length=2, max_length=50)
+    email: str | None = Field(None, max_length=100)
+    phone: str | None = Field(None, max_length=15)
+    is_admin: bool | None = None
+    is_active: bool | None = None
+
+
+@router.put("/users/{user_id}", response_model=dict)
+def update_user(
+    user_id: UUID4,
+    data: UpdateUserRequest,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Update user information (Admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="کاربر یافت نشد"
+        )
+    
+    # Update fields if provided
+    if data.first_name is not None:
+        user.first_name = data.first_name
+    if data.last_name is not None:
+        user.last_name = data.last_name
+    if data.email is not None:
+        # Check if email is already taken by another user
+        if User.objects.filter(email=data.email).exclude(id=user.id).exists():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="این ایمیل قبلاً ثبت شده است"
+            )
+        user.email = data.email
+    if data.phone is not None:
+        user.phone = data.phone
+    if data.is_admin is not None:
+        user.is_admin = data.is_admin
+    if data.is_active is not None:
+        user.is_active = data.is_active
+    
+    user.save()
+    
+    return {
+        'id': str(user.id),
+        'national_id': user.national_id,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'phone': user.phone,
+        'is_admin': user.is_admin,
+        'is_active': user.is_active,
+        'created_at': user.created_at.isoformat(),
+        'updated_at': user.updated_at.isoformat(),
+        'message': 'اطلاعات کاربر با موفقیت به‌روزرسانی شد'
+    }

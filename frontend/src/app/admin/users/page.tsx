@@ -23,9 +23,18 @@ export default function AdminUsersPage() {
   const [filterRole, setFilterRole] = useState('all');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [passwordAction, setPasswordAction] = useState<'update' | 'reset'>('update');
+  const [editFormData, setEditFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    is_admin: false,
+    is_active: true
+  });
 
   useEffect(() => {
     checkAuth();
@@ -141,6 +150,51 @@ export default function AdminUsersPage() {
     setPasswordAction(action);
     setShowPasswordModal(true);
     setNewPassword('');
+  };
+
+  const openEditModal = (user: User) => {
+    setSelectedUser(user);
+    setEditFormData({
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      phone: user.phone || '',
+      is_admin: user.is_admin,
+      is_active: user.is_active
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+
+    const token = localStorage.getItem('access_token');
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users/${selectedUser.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(editFormData),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessage({ type: 'success', text: data.message || 'اطلاعات کاربر با موفقیت به‌روزرسانی شد' });
+        setShowEditModal(false);
+        setSelectedUser(null);
+        fetchUsers();
+      } else {
+        const errorData = await response.json();
+        setMessage({ type: 'error', text: errorData.detail || 'خطا در به‌روزرسانی اطلاعات' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'خطا در ارتباط با سرور' });
+    }
   };
 
   const filteredUsers = users.filter(user => {
@@ -330,6 +384,15 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => openEditModal(user)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="ویرایش اطلاعات"
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button
                             onClick={() => openPasswordModal(user, 'update')}
                             className="text-primary-600 hover:text-primary-900"
                             title="تغییر رمز عبور"
@@ -364,6 +427,125 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              ویرایش اطلاعات کاربر
+            </h3>
+            <p className="text-gray-600 mb-6">
+              کاربر: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.national_id})
+            </p>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    نام *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.first_name}
+                    onChange={(e) => setEditFormData({ ...editFormData, first_name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="نام"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    نام خانوادگی *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.last_name}
+                    onChange={(e) => setEditFormData({ ...editFormData, last_name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="نام خانوادگی"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ایمیل *
+                  </label>
+                  <input
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="example@email.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    شماره تماس
+                  </label>
+                  <input
+                    type="tel"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="09123456789"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="is_admin"
+                    checked={editFormData.is_admin}
+                    onChange={(e) => setEditFormData({ ...editFormData, is_admin: e.target.checked })}
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <label htmlFor="is_admin" className="mr-2 text-sm font-medium text-gray-700">
+                    دسترسی مدیریت
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={editFormData.is_active}
+                    onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <label htmlFor="is_active" className="mr-2 text-sm font-medium text-gray-700">
+                    حساب کاربری فعال
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedUser(null);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                انصراف
+              </button>
+              <button
+                onClick={handleUpdateUser}
+                disabled={!editFormData.first_name || !editFormData.last_name || !editFormData.email}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                ذخیره تغییرات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Password Modal */}
       {showPasswordModal && selectedUser && (
