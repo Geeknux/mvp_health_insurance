@@ -147,3 +147,7 @@ class Person(models.Model):
         """Return the Persian display name for the relation."""
         relation_dict = dict(self.RELATION_CHOICES)
         return relation_dict.get(self.relation, self.relation)
+
+
+# Import Document model
+from .documents import Document

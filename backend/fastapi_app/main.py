@@ -14,7 +14,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from core.config import settings
-from api.v1 import auth, users, insurance, locations, admin, persons, statistics
+from api.v1 import auth, users, insurance, locations, admin, persons, statistics, documents
 
 # Create FastAPI app
 app = FastAPI(
@@ -67,6 +67,7 @@ app.include_router(locations.router, prefix="/api/v1/locations", tags=["مکان
 app.include_router(persons.router, prefix="/api/v1/persons", tags=["افراد تحت پوشش"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["مدیریت"])
 app.include_router(statistics.router, prefix="/api/v1/statistics", tags=["آمار و گزارشات"])
+app.include_router(documents.router, prefix="/api/v1/documents", tags=["مدارک"])
 
 
 @app.get("/")
