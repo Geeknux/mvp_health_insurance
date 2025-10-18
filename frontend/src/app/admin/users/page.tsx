@@ -327,8 +327,8 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -418,6 +418,86 @@ export default function AdminUsersPage() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-4">
+          {filteredUsers.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
+              {searchTerm || filterRole !== 'all' ? 'نتیجه‌ای یافت نشد' : 'هنوز کاربری ثبت نشده است'}
+            </div>
+          ) : (
+            filteredUsers.map((user) => (
+              <div key={user.id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                {/* User Header */}
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-bold">
+                      {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {user.first_name} {user.last_name}
+                      </p>
+                      <p className="text-xs text-gray-500 font-mono">{user.national_id}</p>
+                    </div>
+                  </div>
+                  {user.is_admin ? (
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                      مدیر
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                      کاربر
+                    </span>
+                  )}
+                </div>
+
+                {/* User Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ایمیل:</span>
+                    <span className="text-gray-900 text-left">{user.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">تلفن:</span>
+                    <span className="text-gray-900 font-mono">{user.phone || '-'}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-3 border-t">
+                  <button
+                    onClick={() => openEditModal(user)}
+                    className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                    ویرایش
+                  </button>
+                  <button
+                    onClick={() => openPasswordModal(user, 'update')}
+                    className="flex-1 px-3 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    رمز
+                  </button>
+                  <button
+                    onClick={() => handleResetPassword(user)}
+                    className="px-3 py-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors"
+                    title="بازنشانی رمز عبور"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Summary */}
