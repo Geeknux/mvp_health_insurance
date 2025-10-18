@@ -10,14 +10,13 @@ from django.utils import timezone
 class UserManager(BaseUserManager):
     """Custom user manager for User model."""
     
-    def create_user(self, national_id, email, password=None, **extra_fields):
+    def create_user(self, national_id, email=None, password=None, **extra_fields):
         """Create and save a regular user."""
         if not national_id:
             raise ValueError('کد ملی الزامی است')
-        if not email:
-            raise ValueError('ایمیل الزامی است')
         
-        email = self.normalize_email(email)
+        if email:
+            email = self.normalize_email(email)
         user = self.model(national_id=national_id, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -49,7 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     first_name = models.CharField(max_length=100, verbose_name='نام')
     last_name = models.CharField(max_length=100, verbose_name='نام خانوادگی')
-    email = models.EmailField(unique=True, verbose_name='ایمیل')
+    email = models.EmailField(unique=True, blank=True, null=True, verbose_name='ایمیل')
     phone = models.CharField(max_length=11, blank=True, null=True, verbose_name='تلفن همراه')
     
     is_active = models.BooleanField(default=True, verbose_name='فعال')
@@ -62,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     
     USERNAME_FIELD = 'national_id'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
     
     class Meta:
         db_table = 'users'

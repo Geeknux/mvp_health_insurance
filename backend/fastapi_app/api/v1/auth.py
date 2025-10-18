@@ -13,7 +13,7 @@ router = APIRouter()
 
 class RegisterRequest(BaseModel):
     national_id: str = Field(..., min_length=10, max_length=10, description="کد ملی")
-    email: EmailStr = Field(..., description="ایمیل")
+    email: EmailStr | None = Field(default=None, description="ایمیل")
     first_name: str = Field(..., min_length=2, max_length=100, description="نام")
     last_name: str = Field(..., min_length=2, max_length=100, description="نام خانوادگی")
     phone: str | None = Field(default=None, min_length=11, max_length=11, description="تلفن همراه")
@@ -34,7 +34,7 @@ class TokenResponse(BaseModel):
 class UserResponse(BaseModel):
     id: str
     national_id: str
-    email: str
+    email: str | None = None
     first_name: str
     last_name: str
     phone: str | None = None
@@ -53,7 +53,7 @@ def register(data: RegisterRequest):
             detail="کاربر با این کد ملی قبلاً ثبت‌نام کرده است"
         )
     
-    if User.objects.filter(email=data.email).exists():
+    if data.email and User.objects.filter(email=data.email).exists():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="کاربر با این ایمیل قبلاً ثبت‌نام کرده است"

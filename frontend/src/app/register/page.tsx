@@ -38,10 +38,10 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           national_id: formData.national_id,
-          email: formData.email,
+          email: formData.email || null,
           first_name: formData.first_name,
           last_name: formData.last_name,
-          phone: formData.phone,
+          phone: formData.phone || null,
           password: formData.password,
         }),
       });
@@ -141,7 +141,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  ایمیل
+                  ایمیل <span className="text-gray-400 text-xs">(اختیاری)</span>
                 </label>
                 <input
                   type="email"
@@ -149,13 +149,12 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  required
                 />
               </div>
 
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                  تلفن همراه
+                  تلفن همراه <span className="text-gray-400 text-xs">(اختیاری)</span>
                 </label>
                 <input
                   type="tel"
