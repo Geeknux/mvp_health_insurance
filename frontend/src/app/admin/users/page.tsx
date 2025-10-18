@@ -552,7 +552,7 @@ export default function AdminUsersPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ایمیل *
+                    ایمیل <span className="text-gray-400 text-xs">(اختیاری)</span>
                   </label>
                   <input
                     type="email"
@@ -560,12 +560,11 @@ export default function AdminUsersPage() {
                     onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="example@email.com"
-                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    شماره تماس
+                    شماره تماس <span className="text-gray-400 text-xs">(اختیاری)</span>
                   </label>
                   <input
                     type="tel"
@@ -617,7 +616,7 @@ export default function AdminUsersPage() {
               </button>
               <button
                 onClick={handleUpdateUser}
-                disabled={!editFormData.first_name || !editFormData.last_name || !editFormData.email}
+                disabled={!editFormData.first_name || !editFormData.last_name}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 ذخیره تغییرات
