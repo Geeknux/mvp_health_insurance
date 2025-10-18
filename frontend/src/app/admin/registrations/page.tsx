@@ -129,7 +129,8 @@ export default function AdminRegistrationsPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="mb-6 flex items-center space-x-2 space-x-reverse bg-white rounded-lg p-2 shadow-sm">
+        <div className="mb-6 bg-white rounded-lg p-2 shadow-sm overflow-x-auto">
+          <div className="flex items-center space-x-2 space-x-reverse min-w-max">
           <button
             onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -180,6 +181,7 @@ export default function AdminRegistrationsPage() {
           >
             رد شده ({registrations.filter(r => r.status === 'rejected').length})
           </button>
+          </div>
         </div>
 
         {/* Registrations Table */}
@@ -196,7 +198,9 @@ export default function AdminRegistrationsPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white rounded-xl shadow-sm overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -257,6 +261,57 @@ export default function AdminRegistrationsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-4">
+            {filteredRegistrations.map((registration) => (
+              <div key={registration.id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                {/* Header */}
+                <div className="flex items-start justify-between pb-3 border-b">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {registration.user_name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {registration.plan_name}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(registration.status)}`}>
+                    {getStatusLabel(registration.status)}
+                  </span>
+                </div>
+
+                {/* Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">مدرسه:</span>
+                    <span className="text-gray-900 font-medium">{registration.school_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">تاریخ ثبت‌نام:</span>
+                    <span className="text-gray-900 font-medium">
+                      {new Date(registration.registration_date).toLocaleDateString('fa-IR')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action */}
+                <div className="pt-3 border-t">
+                  <Link
+                    href={`/admin/registrations/${registration.id}`}
+                    className="w-full px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    مشاهده جزئیات
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         )}
       </div>
     </div>
