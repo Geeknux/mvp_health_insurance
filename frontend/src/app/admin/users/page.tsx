@@ -157,7 +157,7 @@ export default function AdminUsersPage() {
     setEditFormData({
       first_name: user.first_name,
       last_name: user.last_name,
-      email: user.email,
+      email: user.email || '',
       phone: user.phone || '',
       is_admin: user.is_admin,
       is_active: user.is_active
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
       user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.national_id.includes(searchTerm) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesRole =
       filterRole === 'all' ||
@@ -365,7 +365,7 @@ export default function AdminUsersPage() {
                         {user.national_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.email}
+                        {user.email || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
                         {user.phone || '-'}
@@ -457,7 +457,7 @@ export default function AdminUsersPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">ایمیل:</span>
-                    <span className="text-gray-900 text-left">{user.email}</span>
+                    <span className="text-gray-900 text-left">{user.email || '-'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">تلفن:</span>
