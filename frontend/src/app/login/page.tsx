@@ -30,14 +30,34 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Validate that we received tokens
+        if (!data.access_token || !data.refresh_token) {
+          setError('خطا در دریافت اطلاعات ورود');
+          setLoading(false);
+          return;
+        }
+        
+        // Store tokens
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
+        
+        // Verify tokens were stored
+        const storedToken = localStorage.getItem('access_token');
+        if (!storedToken) {
+          setError('خطا در ذخیره اطلاعات ورود');
+          setLoading(false);
+          return;
+        }
+        
+        // Navigate to dashboard
         router.push('/dashboard');
       } else {
         const errorData = await response.json();
         setError(errorData.detail || 'خطا در ورود');
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError('خطا در ارتباط با سرور');
     } finally {
       setLoading(false);

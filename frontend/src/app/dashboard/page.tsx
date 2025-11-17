@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const checkAuth = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
+      console.log('No access token found, redirecting to login');
       router.push('/login');
       return;
     }
@@ -33,11 +34,14 @@ export default function DashboardPage() {
         const userData = await response.json();
         setUser(userData);
       } else {
+        console.error('Auth check failed with status:', response.status);
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         router.push('/login');
       }
     } catch (error) {
+      console.error('Auth check error:', error);
+      // Don't remove tokens on network error, just redirect
       router.push('/login');
     } finally {
       setLoading(false);
